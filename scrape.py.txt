@@ -1,0 +1,24 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+url = "https://www.amazon.in/s?k=mobile+phone"
+headers = {"User-Agent": "Mozilla/5.0"}
+
+r = requests.get(url, headers=headers)
+soup = BeautifulSoup(r.text, 'html.parser')
+
+names = []
+prices = []
+
+for item in soup.find_all('div', {'data-component-type': 's-search-result'})[:10]:
+    name = item.h2.text if item.h2 else "No name"
+    price = item.find('span', 'a-offscreen')
+    price = price.text if price else "No price"
+    
+    names.append(name)
+    prices.append(price)
+
+df = pd.DataFrame({"Product Name": names, "Price": prices})
+df.to_excel("products.xlsx", index=False)
+print("Done! Check products.xlsx")
